@@ -134,9 +134,9 @@ jobs:
           rm -rf /tmp/restic/data
           $RESTIC ls latest
           $RESTIC restore latest --target /restic
-          RESTPORED_PATH=$(find /tmp/restic -name file | head -1)
+          RESTPORED_PATH=$(sudo find /tmp/restic -name file | head -1)
           echo "::debug::Restored path: '$RESTPORED_PATH'"
-          RESTORED=$(cat $RESTORED_PATH)
+          RESTORED=$(sudo cat $RESTORED_PATH)
           if [[ $RESTORED -ne 'plaintext' ]]; then
             echo "::debug::Restored content: '$RESTORED'"
             echo '::error::The original file and the restored one has different contents.'
