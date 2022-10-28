@@ -112,8 +112,7 @@ jobs:
           tags: |
             ${{ env.DOCKERHUB_REPOSITORY }}:${{ steps.tag.outputs.value }}
             ${{ env.DOCKERHUB_REPOSITORY }}:latest
-      - if: env.PUSH_IMAGE == 'true'
-        name: Verify the image works
+      - name: Verify the image works
         env:
           TAG: ${{ steps.tag.outputs.value }}
         run: |
