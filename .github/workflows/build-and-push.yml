@@ -119,7 +119,14 @@ jobs:
           mkdir -p /tmp/restic/data
           echo 'password' > /tmp/restic/password
           echo 'plaintext' > /tmp/restic/data/file
-          RESTIC="docker run --platform linux/arm64 --rm -v /tmp/restic:/restic -e RESTIC_REPOSITORY=/restic/repo -e RESTIC_PASSWORD_FILE=/restic/password $DOCKERHUB_REPOSITORY:$TAG"
+          RESTIC="docker run \
+            --platform linux/arm64 \
+            --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v /tmp/restic:/restic \
+            -e RESTIC_REPOSITORY=/restic/repo \
+            -e RESTIC_PASSWORD_FILE=/restic/password \
+            $DOCKERHUB_REPOSITORY:$TAG"
           $RESTIC init
           $RESTIC backup /restic/data
           rm -rf /tmp/restic/data
