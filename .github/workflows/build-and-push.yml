@@ -109,6 +109,7 @@ jobs:
           file: ${{ env.RESTIC_CHECKOUT_PATH }}/docker/Dockerfile
           platforms: linux/arm64
           push: ${{ env.PUSH_IMAGE == 'true' }}
+          load: ${{ env.PUSH_IMAGE != 'true' }}
           tags: |
             ${{ env.DOCKERHUB_REPOSITORY }}:${{ steps.tag.outputs.value }}
             ${{ env.DOCKERHUB_REPOSITORY }}:latest
