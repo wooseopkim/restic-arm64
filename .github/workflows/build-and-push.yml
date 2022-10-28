@@ -32,7 +32,7 @@ jobs:
   tags:
     runs-on: ubuntu-latest
     outputs:
-      refs: ${{ steps.unpublished.outputs.tags }}
+      json: ${{ steps.unpublished.outputs.tags }}
     steps:
       - name: Checkout target repository
         uses: actions/checkout@v3
@@ -55,7 +55,7 @@ jobs:
       # See https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability
       max-parallel: ${{ github.event_name == 'schedule' && 1 || 256 }}
       matrix:
-        ref: ${{ fromJSON(needs.tags.outputs.refs) }}
+        tag: ${{ fromJSON(needs.tags.outputs.json) }}
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v3
@@ -63,7 +63,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: ${{ env.GH_REPOSITORY }}
-          ref: ${{ matrix.ref }}
+          ref: ${{ matrix.tag }}
           fetch-depth: 0
           path: ${{ env.RESTIC_CHECKOUT_PATH }}
       - name: Set up QEMU
@@ -92,10 +92,10 @@ jobs:
       - name: Create tag for Docker image
         id: tag
         env:
-          RAW: ${{ matrix.ref }}
+          GIT_TAG: ${{ matrix.tag }}
         run: |
-          TAG=$(echo $RAW | sed 's/^\(refs\/tags\/\)\?v\?//')
-          echo value=$TAG >> $GITHUB_OUTPUT
+          DOCKER_TAG=$(echo $GIT_TAG | sed 's/^\(refs\/tags\/\)\?v\?//')
+          echo value=$DOCKER_TAG >> $GITHUB_OUTPUT
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
