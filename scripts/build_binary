@@ -30,7 +30,7 @@ fi
 GO111MODULE=off
 if [ -e go.mod ]; then
   GO111MODULE=on
-else
+fi
 echo "::debug::GO111MODULE '$GO111MODULE'"
 
 wget "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" -O "/tmp/go${GO_VERSION}.tar.gz"
