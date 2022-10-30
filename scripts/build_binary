@@ -21,14 +21,13 @@ if [ "$GO_VERSION" = '' ]; then
     # Because semver parsing was broken and 1.10.0 > 1.9.0 check failed
     GO_VERSION=1.9.7
   else
+    # Because go version in go.mod was provided first at v0.9.6, and v0.9.5 used Go 1.11.1
+    # See https://restic.readthedocs.io/en/v0.9.5/developer_information.html#reproducible-builds
+    GO_VERSION=1.11.1
     if [ -e go.mod ]; then
-      # Because go version in go.mod was provided first at v0.9.6, and v0.9.5 used Go 1.11.1
-      # See https://restic.readthedocs.io/en/v0.9.5/developer_information.html#reproducible-builds
-      GO_VERSION=1.11.1
+      GO111MODULE=on
     else
-      # Go Modules concept was introduced at Go 1.11
-      # See https://go.dev/doc/go1.11#modules
-      GO_VERSION=1.10.8
+      GO111MODULE=off
     fi
   fi
 fi
@@ -37,5 +36,6 @@ wget "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" -O "/tmp/go${GO_VERS
 tar -xzf "/tmp/go${GO_VERSION}.tar.gz" -C /tmp
 mv /tmp/go "/tmp/go${GO_VERSION}"
 
-"/tmp/go${GO_VERSION}/bin/go" version
-"/tmp/go${GO_VERSION}/bin/go" run build.go --goos linux --goarch arm64
+GO="/tmp/go${GO_VERSION}/bin/go"
+$GO version
+GO111MODULE="$GO111MODULE" $GO run build.go --goos linux --goarch arm64
