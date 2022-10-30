@@ -61,7 +61,7 @@ jobs:
           echo github-repository=$GH_REPOSITORY >> $GITHUB_OUTPUT
           echo dockerhub-repository=$DOCKERHUB_REPOSITORY >> $GITHUB_OUTPUT
   build:
-    needs: [prepare-values]
+    needs: [prepare-scripts, prepare-values]
     if: needs.tags.out.puts.unpublished != '[]' && needs.tags.out.puts.unpublished != ''
     uses: wooseopkim/publish-tags/.github/workflows/workflow.yml@main
     with:
