@@ -43,7 +43,7 @@ jobs:
   prepare-values:
     runs-on: ubuntu-latest
     outputs:
-      unpublished: ${{ steps.unpublished.outputs.tags }}
+      unpublished: ${{ steps.tags.outputs.unpublished }}
     steps:
       - name: Checkout target repository
         uses: actions/checkout@v3
@@ -51,8 +51,8 @@ jobs:
           repository: ${{ env.GH_REPOSITORY }}
           fetch-depth: 0
       - name: Get unpublished tags
-        id: unpublished
-        uses: wooseopkim/unpublished-tags@v2
+        id: tags
+        uses: wooseopkim/unpublished-tags@v3
         with:
           dockerhub-repository: ${{ env.DOCKERHUB_REPOSITORY }}
           first-tag: v0.7.2
