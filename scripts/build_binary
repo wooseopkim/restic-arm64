@@ -1,0 +1,41 @@
+#!/bin/sh
+
+DOCKERFILE_BUILD_MERGED=829c0a67afacfc3567eac574b8af9491569db1dd
+SEMVER_FIXED=02f4f5dc66288a8b50c6a2cd8923e41998a4f8af
+
+COMMITS_UNTIL_DOCKERFILE_BUILD_MERGED=$(git rev-list --count .."$DOCKERFILE_BUILD_MERGED")
+if [ "$COMMITS_UNTIL_DOCKERFILE_BUILD_MERGED" != '0' ]; then REQUIRES_BUILD=true; else REQUIRES_BUILD=false; fi
+
+if [ "$REQUIRES_BUILD" != 'true' ]; then
+  exit 0
+fi
+
+GO_VERSION=$(grep -Po '(?<=(^go ))(\d\.[\d.]+)' go.mod || :)
+
+if [ "$GO_VERSION" = '' ]; then
+  COMMITS_UNTIL_SEMVER_FIXED=$(git rev-list --count .."$SEMVER_FIXED")
+  if [ "$COMMITS_UNTIL_SEMVER_FIXED" != 0 ]; then SEMVER_BROKEN=true; else SEMVER_BROKEN=false; fi
+
+  # See https://go.dev/dl/#archive
+  if [ "$SEMVER_BROKEN" = 'true' ]; then
+    # Because semver parsing was broken and 1.10.0 > 1.9.0 check failed
+    GO_VERSION=1.9.7
+  else
+    if [ -e go.mod ]; then
+      # Because go version in go.mod was provided first at v0.9.6, and v0.9.5 used Go 1.11.1
+      # See https://restic.readthedocs.io/en/v0.9.5/developer_information.html#reproducible-builds
+      GO_VERSION=1.11.1
+    else
+      # Go Modules concept was introduced at Go 1.11
+      # See https://go.dev/doc/go1.11#modules
+      GO_VERSION=1.10.8
+    fi
+  fi
+fi
+
+wget "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" -O "/tmp/go${GO_VERSION}.tar.gz"
+tar -xzf "/tmp/go${GO_VERSION}.tar.gz" -C /tmp
+mv /tmp/go "/tmp/go${GO_VERSION}"
+
+"/tmp/go${GO_VERSION}/bin/go" version
+"/tmp/go${GO_VERSION}/bin/go" run build.go --goos linux --goarch arm64

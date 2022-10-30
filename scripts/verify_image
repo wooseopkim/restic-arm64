@@ -1,0 +1,33 @@
+#!/bin/sh
+
+IMAGE="$1"
+TAG="$2"
+
+mkdir -p /tmp/restic/data
+echo 'password' > /tmp/restic/password
+echo 'plaintext' > /tmp/restic/data/file
+
+RESTIC="docker run \
+  --platform linux/arm64 \
+  --rm \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v /tmp/restic:/restic \
+  -e RESTIC_REPOSITORY=/restic/repo \
+  -e RESTIC_PASSWORD_FILE=/restic/password \
+  $IMAGE:$TAG"
+
+$RESTIC init
+$RESTIC backup /restic/data
+rm -rf /tmp/restic/data
+$RESTIC ls latest
+$RESTIC restore latest --target /restic
+
+RESTORED_PATH=$(sudo find /tmp/restic -name file | head -1)
+echo "::debug::Restored path: '$RESTORED_PATH'"
+
+RESTORED=$(sudo cat "$RESTORED_PATH")
+if [ "$RESTORED" != 'plaintext' ]; then
+  echo "::debug::Restored content: '$RESTORED'"
+  echo '::error::The original file and the restored one has different contents.'
+  exit 1
+fi

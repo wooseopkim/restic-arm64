@@ -19,9 +19,6 @@ on:
 env:
   GH_REPOSITORY: restic/restic
   DOCKERHUB_REPOSITORY: ${{ github.actor }}/restic
-  RESTIC_CHECKOUT_PATH: restic
-  DOCKERFILE_BUILD_MERGED: 829c0a67afacfc3567eac574b8af9491569db1dd
-  SEMVER_FIXED: 02f4f5dc66288a8b50c6a2cd8923e41998a4f8af
   PUSH_IMAGE: ${{ github.event_name == 'schedule' }}
 
 concurrency:
@@ -29,6 +26,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  prepare-scripts:
+    name: Upload scripts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Tar scripts
+        run: |
+          tar -cvf /tmp/artifacts.tar ./scripts/*
+      - name: Upload scripts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ github.repository_owner }}_${{ github.event.repository.name }}_artifacts
+          path: /tmp/artifacts.tar
   tags:
     runs-on: ubuntu-latest
     outputs:
@@ -48,98 +59,15 @@ jobs:
   build:
     needs: [tags]
     if: needs.tags.out.puts.unpublished != '[]' && needs.tags.out.puts.unpublished != ''
-    runs-on: ubuntu-latest
-    strategy:
-      # The official docs: "A matrix will generate a maximum of 256 jobs per workflow run."
-      # See https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs#using-a-matrix-strategy
-      # Also, because `env` is not available for `jobs.<job_id>.strategy`, we need to use the bare condition here.
-      # See https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability
-      max-parallel: ${{ github.event_name == 'schedule' && 1 || 256 }}
-      matrix:
-        tag: ${{ fromJSON(needs.tags.outputs.json) }}
-    steps:
-      - name: Checkout this repository
-        uses: actions/checkout@v3
-      - name: Checkout target repository
-        uses: actions/checkout@v3
-        with:
-          repository: ${{ env.GH_REPOSITORY }}
-          ref: ${{ matrix.tag }}
-          fetch-depth: 0
-          path: ${{ env.RESTIC_CHECKOUT_PATH }}
-      - name: Set up QEMU
-        id: qemu
-        uses: docker/setup-qemu-action@v2
-        with:
-          platforms: linux/arm64
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      - name: Check if manual build is required
-        id: manual-build
-        run: |
-          cd ${{ github.workspace }}/${{ env.RESTIC_CHECKOUT_PATH }}
-          COMMITS_UNTIL_DOCKERFILE_BUILD_MERGED=$(git rev-list --count ..$DOCKERFILE_BUILD_MERGED)
-          if [[ $COMMITS_UNTIL_DOCKERFILE_BUILD_MERGED -gt 0 ]]; then REQUIRES_BUILD=true; else REQUIRES_BUILD=false; fi
-          echo required=$REQUIRES_BUILD >> $GITHUB_OUTPUT
-          COMMITS_UNTIL_SEMVER_FIXED=$(git rev-list --count ..$SEMVER_FIXED)
-          if [[ $COMMITS_UNTIL_SEMVER_FIXED -gt 0 ]]; then SEMVER_BROKEN=true; else SEMVER_BROKEN=false; fi
-          echo semver-broken=$SEMVER_BROKEN >> $GITHUB_OUTPUT
-      - if: steps.manual-build.outputs.required == 'true'
-        name: Manually build binary
-        uses: ./.github/actions/build-binary
-        with:
-          semver-broken: ${{ steps.manual-build.outputs.semver-broken }}
-          workdir: ${{ env.RESTIC_CHECKOUT_PATH }}
-      - name: Create tag for Docker image
-        id: tag
-        env:
-          GIT_TAG: ${{ matrix.tag }}
-        run: |
-          DOCKER_TAG=$(echo $GIT_TAG | sed 's/^\(refs\/tags\/\)\?v\?//')
-          echo value=$DOCKER_TAG >> $GITHUB_OUTPUT
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build and push
-        uses: docker/build-push-action@v3
-        id: image
-        with:
-          context: ${{ env.RESTIC_CHECKOUT_PATH }}
-          file: ${{ env.RESTIC_CHECKOUT_PATH }}/docker/Dockerfile
-          platforms: linux/arm64
-          push: ${{ env.PUSH_IMAGE == 'true' }}
-          load: ${{ env.PUSH_IMAGE != 'true' }}
-          tags: |
-            ${{ env.DOCKERHUB_REPOSITORY }}:${{ steps.tag.outputs.value }}
-            ${{ env.DOCKERHUB_REPOSITORY }}:latest
-      - name: Verify the image works
-        env:
-          TAG: ${{ steps.tag.outputs.value }}
-        run: |
-          docker images
-          mkdir -p /tmp/restic/data
-          echo 'password' > /tmp/restic/password
-          echo 'plaintext' > /tmp/restic/data/file
-          RESTIC="docker run \
-            --platform linux/arm64 \
-            --rm \
-            -v /var/run/docker.sock:/var/run/docker.sock \
-            -v /tmp/restic:/restic \
-            -e RESTIC_REPOSITORY=/restic/repo \
-            -e RESTIC_PASSWORD_FILE=/restic/password \
-            $DOCKERHUB_REPOSITORY:$TAG"
-          $RESTIC init
-          $RESTIC backup /restic/data
-          rm -rf /tmp/restic/data
-          $RESTIC ls latest
-          $RESTIC restore latest --target /restic
-          RESTPORED_PATH=$(sudo find /tmp/restic -name file | head -1)
-          echo "::debug::Restored path: '$RESTPORED_PATH'"
-          RESTORED=$(sudo cat $RESTORED_PATH)
-          if [[ $RESTORED -ne 'plaintext' ]]; then
-            echo "::debug::Restored content: '$RESTORED'"
-            echo '::error::The original file and the restored one has different contents.'
-            exit 1
-          fi
+    uses: wooseopkim/publish-tags/workflow.yml@main
+    with:
+      tags: ${{ needs.tags.outputs.unpublished }}
+      github-repository: ${{ env.GH_REPOSITORY }}
+      dockerhub-repository: ${{ env.DOCKERHUB_REPOSITORY }}
+      pre-build-script: |
+        ~/artifacts/scripts/build_binary
+      post-build-script: |
+        ~/artifacts/scripts/verify_image $IMAGE $TAG
+      push-image: ${{ github.event_name == 'schedule' }}
+      platforms: linux/arm64
+      dockerfile: docker/Dockerfile
