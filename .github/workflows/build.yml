@@ -24,8 +24,6 @@ jobs:
       tags: ${{ inputs.tags }}
       github-repository: restic/restic
       dockerhub-repository: wooseopkim/restic
-      pre-build-script: |
-        ~/artifacts/scripts/build_binary
       post-build-script: |
         ~/artifacts/scripts/verify_image $IMAGE $TAG
       push-image: ${{ inputs.push-image }}
