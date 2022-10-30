@@ -56,8 +56,9 @@ jobs:
         uses: wooseopkim/unpublished-tags@v3
         with:
           dockerhub-repository: ${{ env.DOCKERHUB_REPOSITORY }}
-          # Because versions before this didn't use Go Modules
-          first-tag: v0.9.3
+          # Because versions before this required manual build, didn't have go.mod,
+          # or even was not dockerized, skip versions before this for simplicity.
+          first-tag: v0.13.0
   build-unpublished:
     needs: [prepare-scripts, prepare-tags]
     uses: ./.github/workflows/build.yml
