@@ -65,12 +65,12 @@ jobs:
     with:
       tags: ${{ needs.prepare-tags.outputs.unpublished }}
       push-image: ${{ github.event_name == 'schedule' }}
+    secrets:
+      dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+      dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
   build-published:
     needs: [prepare-scripts, prepare-tags]
     uses: ./.github/workflows/build.yml
     with:
       tags: ${{ needs.prepare-tags.outputs.published }}
       push-image: false
-    secrets:
-      dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
-      dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
