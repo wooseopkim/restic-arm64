@@ -59,7 +59,7 @@ jobs:
   build:
     needs: [tags]
     if: needs.tags.out.puts.unpublished != '[]' && needs.tags.out.puts.unpublished != ''
-    uses: wooseopkim/publish-tags/workflow.yml@main
+    uses: wooseopkim/publish-tags/.github/workflows/workflow.yml@main
     with:
       tags: ${{ needs.tags.outputs.unpublished }}
       github-repository: ${{ env.GH_REPOSITORY }}
