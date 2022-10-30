@@ -40,13 +40,11 @@ jobs:
         with:
           name: ${{ github.repository_owner }}_${{ github.event.repository.name }}_artifacts
           path: /tmp/artifacts.tar
-  prepare-values:
+  prepare-tags:
     runs-on: ubuntu-latest
     outputs:
       unpublished: ${{ steps.tags.outputs.unpublished }}
       published: ${{ steps.tags.outputs.published }}
-      github-repository: ${{ steps.env.outputs.github-repository }}
-      dockerhub-repository: ${{ steps.env.outputs.dockerhub-repository }}
     steps:
       - name: Checkout target repository
         uses: actions/checkout@v3
@@ -59,22 +57,17 @@ jobs:
         with:
           dockerhub-repository: ${{ env.DOCKERHUB_REPOSITORY }}
           first-tag: v0.7.2
-      - name: Expose environment variables
-        id: env
-        run: |
-          echo github-repository=$GH_REPOSITORY >> $GITHUB_OUTPUT
-          echo dockerhub-repository=$DOCKERHUB_REPOSITORY >> $GITHUB_OUTPUT
   build-unpublished:
-    needs: [prepare-scripts, prepare-values]
+    needs: [prepare-scripts, prepare-tags]
     uses: ./.github/workflows/build.yml
     with:
-      tags: ${{ needs.prepare-values.outputs.unpublished }}
+      tags: ${{ needs.prepare-tags.outputs.unpublished }}
       push-image: ${{ github.event_name == 'schedule' }}
   build-published:
-    needs: [prepare-scripts, prepare-values]
+    needs: [prepare-scripts, prepare-tags]
     uses: ./.github/workflows/build.yml
     with:
-      tags: ${{ needs.prepare-values.outputs.published }}
+      tags: ${{ needs.prepare-tags.outputs.published }}
       push-image: false
     secrets:
       dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
