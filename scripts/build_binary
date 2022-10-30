@@ -36,7 +36,6 @@ wget "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" -O "/tmp/go${GO_VERS
 tar -xzf "/tmp/go${GO_VERSION}.tar.gz" -C /tmp
 mv /tmp/go "/tmp/go${GO_VERSION}"
 
-GO="GO111MODULE=$GO111MODULE /tmp/go${GO_VERSION}/bin/go"
-echo "::debug::Base go command: '$GO'"
+GO="/tmp/go${GO_VERSION}/bin/go"
 $GO version
-$GO run build.go --goos linux --goarch arm64
+GO111MODULE="$GO111MODULE" $GO run build.go --goos linux --goarch arm64
