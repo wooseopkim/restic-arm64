@@ -22,8 +22,8 @@ rm -rf /tmp/restic/data
 $RESTIC ls latest
 $RESTIC restore latest --target /restic
 
+sudo ls -R /tmp/restic
 RESTORED_PATH=$(sudo find /tmp/restic -name file | head -1)
-echo "::debug::Restored path: '$RESTORED_PATH'"
 
 RESTORED=$(sudo cat "$RESTORED_PATH")
 if [ "$RESTORED" != 'plaintext' ]; then
