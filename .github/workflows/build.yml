@@ -19,7 +19,7 @@ on:
 jobs:
   build-tags:
     if: inputs.tags != '[]' && inputs.tags != ''
-    uses: wooseopkim/publish-tags/.github/workflows/workflow.yml@v1
+    uses: wooseopkim/publish-tags/.github/workflows/workflow.yml@main
     with:
       tags: ${{ inputs.tags }}
       github-repository: restic/restic
