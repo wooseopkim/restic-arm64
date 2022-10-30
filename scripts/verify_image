@@ -19,7 +19,6 @@ RESTIC="docker run \
 $RESTIC init
 $RESTIC backup /restic/data
 rm -rf /tmp/restic/data
-$RESTIC ls latest
 $RESTIC restore latest --target /restic
 
 RESTORED_PATH=$(sudo find /tmp/restic -name file | head -1)
