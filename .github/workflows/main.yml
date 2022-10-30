@@ -66,13 +66,13 @@ jobs:
           echo dockerhub-repository=$DOCKERHUB_REPOSITORY >> $GITHUB_OUTPUT
   build-unpublished:
     needs: [prepare-scripts, prepare-values]
-    uses: ./.github/workflows/workflow.yml
+    uses: ./.github/workflows/build.yml
     with:
       tags: ${{ needs.prepare-values.outputs.unpublished }}
       push-image: ${{ github.event_name == 'schedule' }}
   build-published:
     needs: [prepare-scripts, prepare-values]
-    uses: ./.github/workflows/workflow.yml
+    uses: ./.github/workflows/build.yml
     with:
       tags: ${{ needs.prepare-values.outputs.published }}
       push-image: false
