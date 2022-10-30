@@ -22,8 +22,8 @@ jobs:
     uses: wooseopkim/publish-tags/.github/workflows/workflow.yml@main
     with:
       tags: ${{ inputs.tags }}
-      github-repository: ${{ inputs.github-repository }}
-      dockerhub-repository: ${{ inputs.dockerhub-repository }}
+      github-repository: restic/restic
+      dockerhub-repository: wooseopkim/restic
       pre-build-script: |
         ~/artifacts/scripts/build_binary
       post-build-script: |
