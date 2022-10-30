@@ -1,0 +1,50 @@
+name: Build tags
+
+on:
+  workflow_call:
+    inputs:
+      tags:
+        required: true
+        type: string
+      github-repository:
+        required: true
+        type: string
+      dockerhub-repository:
+        required: true
+        type: string
+      push-image:
+        required: false
+        type: boolean
+        default: false
+      docker-context:
+        required: false
+        type: string
+        default: .
+      dockerfile:
+        required: false
+        type: string
+        default: Dockerfile
+    secrets:
+      dockerhub-username:
+        required: false
+      dockerhub-token:
+        required: false
+
+jobs:
+  build:
+    if: inputs.tags != '[]' && inputs.tags != ''
+    uses: wooseopkim/publish-tags/.github/workflows/workflow.yml@main
+    with:
+      tags: ${{ inputs.tags }}
+      github-repository: ${{ inputs.github-repository }}
+      dockerhub-repository: ${{ inputs.dockerhub-repository }}
+      pre-build-script: |
+        ~/artifacts/scripts/build_binary
+      post-build-script: |
+        ~/artifacts/scripts/verify_image $IMAGE $TAG
+      push-image: ${{ inputs.push-image }}
+      platforms: linux/arm64
+      dockerfile: docker/Dockerfile
+    secrets:
+      dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+      dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}

@@ -1,4 +1,4 @@
-name: Detect new releases and build `linux/arm64` Docker images
+name: Detect tags and build Docker images
 
 on:
   push:
@@ -44,6 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       unpublished: ${{ steps.tags.outputs.unpublished }}
+      published: ${{ steps.tags.outputs.published }}
       github-repository: ${{ steps.env.outputs.github-repository }}
       dockerhub-repository: ${{ steps.env.outputs.dockerhub-repository }}
     steps:
@@ -63,18 +64,18 @@ jobs:
         run: |
           echo github-repository=$GH_REPOSITORY >> $GITHUB_OUTPUT
           echo dockerhub-repository=$DOCKERHUB_REPOSITORY >> $GITHUB_OUTPUT
-  build:
+  build-unpublished:
     needs: [prepare-scripts, prepare-values]
-    if: needs.tags.out.puts.unpublished != '[]' && needs.tags.out.puts.unpublished != ''
-    uses: wooseopkim/publish-tags/.github/workflows/workflow.yml@main
+    uses: ./.github/workflows/workflow.yml
     with:
       tags: ${{ needs.prepare-values.outputs.unpublished }}
-      github-repository: ${{ needs.prepare-values.outputs.github-repository }}
-      dockerhub-repository: ${{ needs.prepare-values.outputs.dockerhub-repository }}
-      pre-build-script: |
-        ~/artifacts/scripts/build_binary
-      post-build-script: |
-        ~/artifacts/scripts/verify_image $IMAGE $TAG
       push-image: ${{ github.event_name == 'schedule' }}
-      platforms: linux/arm64
-      dockerfile: docker/Dockerfile
+  build-published:
+    needs: [prepare-scripts, prepare-values]
+    uses: ./.github/workflows/workflow.yml
+    with:
+      tags: ${{ needs.prepare-values.outputs.published }}
+      push-image: false
+    secrets:
+      dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+      dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
