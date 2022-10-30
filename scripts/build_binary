@@ -24,13 +24,14 @@ if [ "$GO_VERSION" = '' ]; then
     # Because go version in go.mod was provided first at v0.9.6, and v0.9.5 used Go 1.11.1
     # See https://restic.readthedocs.io/en/v0.9.5/developer_information.html#reproducible-builds
     GO_VERSION=1.11.1
-    if [ -e go.mod ]; then
-      GO111MODULE=on
-    else
-      GO111MODULE=off
-    fi
   fi
 fi
+
+GO111MODULE=off
+if [ -e go.mod ]; then
+  GO111MODULE=on
+else
+echo "::debug::GO111MODULE '$GO111MODULE'"
 
 wget "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" -O "/tmp/go${GO_VERSION}.tar.gz"
 tar -xzf "/tmp/go${GO_VERSION}.tar.gz" -C /tmp
