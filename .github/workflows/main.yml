@@ -14,7 +14,8 @@ on:
     # GitHub Actions workflow runs. High load times include the start of every hour. To decrease
     # the chance of delay, schedule your workflow to run at a different time of the hour."
     # 42 is for https://en.wikipedia.org/wiki/42_(number)#The_Hitchhiker's_Guide_to_the_Galaxy
-    - cron: '42 * * * *'
+    # 9 is just a magic number
+    - cron: '42 9 * * *'
 
 env:
   GH_REPOSITORY: restic/restic
