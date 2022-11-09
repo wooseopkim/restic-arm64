@@ -36,7 +36,7 @@ jobs:
             dockerfile: docker/Dockerfile
             platforms: linux/arm64
             first-tag: v0.13.0
-            post-build-script: ./scripts/verify/restic $IMAGE $TAG
+            post-build-script: ./restic-arm64/verify $IMAGE $TAG
     uses: ./.github/workflows/build-image.yml
     with:
       github-repository: ${{ matrix.github-repository }}
