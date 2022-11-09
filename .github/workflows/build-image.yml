@@ -1,0 +1,77 @@
+name: Build image
+
+on:
+  workflow_call:
+    inputs:
+      push-image:
+        required: false
+        type: boolean
+        default: false
+      github-repository:
+        required: true
+        type: string
+      dockerhub-repository:
+        required: true
+        type: string
+      platforms:
+        required: false
+        type: string
+        default: linux/amd64,linux/arm64
+      first-tag:
+        required: false
+        type: string
+      dockerfile:
+        required: false
+        type: string
+      post-build-script:
+        required: false
+        type: string
+    secrets:
+      dockerhub-username:
+        required: false
+      dockerhub-token:
+        required: false
+
+jobs:
+  prepare-tags:
+    runs-on: ubuntu-latest
+    outputs:
+      unpublished: ${{ steps.tags.outputs.unpublished }}
+      published: ${{ steps.tags.outputs.published }}
+    steps:
+      - name: Checkout target repository
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ inputs.github-repository }}
+          fetch-depth: 0
+      - name: Get unpublished tags
+        id: tags
+        uses: wooseopkim/unpublished-tags@v3
+        with:
+          dockerhub-repository: ${{ inputs.dockerhub-repository }}
+          first-tag: ${{ inputs.first-tag }}
+  build-unpublished:
+    needs: [prepare-tags]
+    uses: wooseopkim/publish-refs/.github/workflows/workflow.yml@v1
+    with:
+      refs: ${{ needs.prepare-tags.outputs.unpublished }}
+      push-image: ${{ inputs.push-image }}
+      github-repository: ${{ inputs.github-repository }}
+      dockerhub-repository: ${{ inputs.dockerhub-repository }}
+      platforms: ${{ inputs.platforms }}
+      dockerfile: ${{ inputs.dockerfile }}
+      post-build-script: ${{ inputs.post-build-script }}
+    secrets:
+      dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+      dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+  build-published:
+    needs: [prepare-tags]
+    uses: wooseopkim/publish-refs/.github/workflows/workflow.yml@v1
+    with:
+      refs: ${{ needs.prepare-tags.outputs.published }}
+      push-image: false
+      github-repository: ${{ inputs.github-repository }}
+      dockerhub-repository: ${{ inputs.dockerhub-repository }}
+      platforms: ${{ inputs.platforms }}
+      dockerfile: ${{ inputs.dockerfile }}
+      post-build-script: ${{ inputs.post-build-script }}

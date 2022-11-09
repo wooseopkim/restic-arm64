@@ -27,51 +27,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  prepare-scripts:
-    name: Upload scripts
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Tar scripts
-        run: |
-          tar -cvf /tmp/artifacts.tar ./scripts/*
-      - name: Upload scripts
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ github.repository_owner }}_${{ github.event.repository.name }}_artifacts
-          path: /tmp/artifacts.tar
-  prepare-tags:
-    runs-on: ubuntu-latest
-    outputs:
-      unpublished: ${{ steps.tags.outputs.unpublished }}
-      published: ${{ steps.tags.outputs.published }}
-    steps:
-      - name: Checkout target repository
-        uses: actions/checkout@v3
-        with:
-          repository: ${{ env.GH_REPOSITORY }}
-          fetch-depth: 0
-      - name: Get unpublished tags
-        id: tags
-        uses: wooseopkim/unpublished-tags@v3
-        with:
-          dockerhub-repository: ${{ env.DOCKERHUB_REPOSITORY }}
-          # Because versions before this required manual build, didn't have go.mod,
-          # or even was not dockerized, skip versions before this for simplicity.
-          first-tag: v0.13.0
-  build-unpublished:
-    needs: [prepare-scripts, prepare-tags]
-    uses: ./.github/workflows/build.yml
+  build-images:
+    strategy:
+      matrix:
+        include:
+          - github-repository: restic/restic
+            dockerhub-repository: wooseopkim/restic
+            dockerfile: docker/Dockerfile
+            platforms: linux/arm64
+            first-tag: v0.13.0
+            post-build-script: ./scripts/verify/restic $IMAGE $TAG
+    uses: ./.github/workflows/build-image.yml
     with:
-      tags: ${{ needs.prepare-tags.outputs.unpublished }}
+      github-repository: ${{ matrix.github-repository }}
+      dockerhub-repository: ${{ matrix.dockerhub-repository }}
+      dockerfile: ${{ matrix.dockerfile }}
+      platforms: ${{ matrix.platforms }}
+      first-tag: ${{ matrix.first-tag }}
       push-image: ${{ github.event_name == 'schedule' }}
+      post-build-script: ${{ matrix.post-build-script }}
     secrets:
       dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
       dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
-  build-published:
-    needs: [prepare-scripts, prepare-tags]
-    uses: ./.github/workflows/build.yml
-    with:
-      tags: ${{ needs.prepare-tags.outputs.published }}
-      push-image: false
