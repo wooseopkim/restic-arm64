@@ -37,6 +37,14 @@ jobs:
             platforms: linux/arm64
             first-tag: v0.13.0
             post-build-script: ./restic-arm64/verify $IMAGE $TAG
+          - github-repository: etesync/server
+            dockerhub-repository: wooseopkim/etesync
+            pre-build-script: |
+              mkdir -p $CHECKOUT_PATH/unofficial
+              cp ./etesync-server/Dockerfile $CHECKOUT_PATH/unofficial/Dockerfile
+            first-tag: v0.10.0
+            dockerfile: unofficial/Dockerfile
+            post-build-script: ./etesync-server/verify $IMAGE $TAG
     uses: ./.github/workflows/build-image.yml
     with:
       github-repository: ${{ matrix.github-repository }}
@@ -45,6 +53,7 @@ jobs:
       platforms: ${{ matrix.platforms }}
       first-tag: ${{ matrix.first-tag }}
       push-image: ${{ github.event_name == 'schedule' }}
+      pre-build-script: ${{ matrix.pre-build-script }}
       post-build-script: ${{ matrix.post-build-script }}
     secrets:
       dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}

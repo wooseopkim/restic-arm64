@@ -23,6 +23,9 @@ on:
       dockerfile:
         required: false
         type: string
+      pre-build-script:
+        required: false
+        type: string
       post-build-script:
         required: false
         type: string
@@ -60,6 +63,7 @@ jobs:
       dockerhub-repository: ${{ inputs.dockerhub-repository }}
       platforms: ${{ inputs.platforms }}
       dockerfile: ${{ inputs.dockerfile }}
+      pre-build-script: ${{ inputs.pre-build-script }}
       post-build-script: ${{ inputs.post-build-script }}
     secrets:
       dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -74,4 +78,5 @@ jobs:
       dockerhub-repository: ${{ inputs.dockerhub-repository }}
       platforms: ${{ inputs.platforms }}
       dockerfile: ${{ inputs.dockerfile }}
+      pre-build-script: ${{ inputs.pre-build-script }}
       post-build-script: ${{ inputs.post-build-script }}
