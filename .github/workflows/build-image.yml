@@ -66,8 +66,8 @@ jobs:
       pre-build-script: ${{ inputs.pre-build-script }}
       post-build-script: ${{ inputs.post-build-script }}
     secrets:
-      dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
-      dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
+      dockerhub-username: ${{ secrets.dockerhub-username }}
+      dockerhub-token: ${{ secrets.dockerhub-token }}
   build-published:
     needs: [prepare-tags]
     uses: wooseopkim/publish-refs/.github/workflows/workflow.yml@v1
