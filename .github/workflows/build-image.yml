@@ -39,8 +39,8 @@ jobs:
   prepare-tags:
     runs-on: ubuntu-latest
     outputs:
-      unpublished: ${{ steps.tags.outputs.unpublished }}
-      published: ${{ steps.tags.outputs.published }}
+      unpublished: ${{ steps.prefix.outputs.unpublished }}
+      published: ${{ steps.prefix.outputs.published }}
     steps:
       - name: Checkout target repository
         uses: actions/checkout@v3
@@ -53,6 +53,16 @@ jobs:
         with:
           dockerhub-repository: ${{ inputs.dockerhub-repository }}
           first-tag: ${{ inputs.first-tag }}
+      - name: Add ref prefix
+        id: prefix
+        env:
+          PUBLISHED: ${{ steps.tags.outputs.published }}
+          UNPUBLISHED: ${{ steps.tags.outputs.unpublished }}
+        run: |
+          PUBLISHED_PREFIXED=$(echo refs/tags/"$PUBLISHED")
+          UNPUBLISHED_PREFIXED=$(echo refs/tags/"$UNPUBLISHED")
+          echo published="$PUBLISHED_PREFIXED" >> $GITHUB_OUTPUT
+          echo unpublished="$UNPUBLISHED_PREFIXED" >> $GITHUB_OUTPUT
   build-unpublished:
     needs: [prepare-tags]
     uses: wooseopkim/publish-refs/.github/workflows/workflow.yml@v1
