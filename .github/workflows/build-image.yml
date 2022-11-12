@@ -59,8 +59,8 @@ jobs:
           PUBLISHED: ${{ steps.tags.outputs.published }}
           UNPUBLISHED: ${{ steps.tags.outputs.unpublished }}
         run: |
-          PUBLISHED_PREFIXED=$(echo refs/tags/"$PUBLISHED")
-          UNPUBLISHED_PREFIXED=$(echo refs/tags/"$UNPUBLISHED")
+          PUBLISHED_PREFIXED=$(echo "$PUBLISHED" | jq -c 'map("refs/tags/" + .)')
+          UNPUBLISHED_PREFIXED=$(echo "$UNPUBLISHED" | jq -c 'map("refs/tags/" + .)')
           echo published="$PUBLISHED_PREFIXED" >> $GITHUB_OUTPUT
           echo unpublished="$UNPUBLISHED_PREFIXED" >> $GITHUB_OUTPUT
   build-unpublished:
