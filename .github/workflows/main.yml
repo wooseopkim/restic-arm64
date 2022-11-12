@@ -32,24 +32,24 @@ jobs:
       matrix:
         include:
           - github-repository: restic/restic
-            dockerhub-repository: wooseopkim/restic
-            dockerfile: docker/Dockerfile
             platforms: linux/arm64
+            dockerhub-repository: wooseopkim/restic
             first-tag: v0.13.0
+            dockerfile: docker/Dockerfile
             post-build-script: ./restic-arm64/verify $IMAGE $TAG
           - github-repository: etesync/server
+            platforms: linux/arm64
             dockerhub-repository: wooseopkim/etesync
-            pre-build-script: ./etesync-server/setup
             first-tag: v0.10.0
             dockerfile: unofficial/Dockerfile
-            platforms: linux/arm64
+            pre-build-script: ./etesync-server/setup
             post-build-script: ./etesync-server/verify $IMAGE $TAG
           - github-repository: etesync/server
+            platforms: linux/amd64
             dockerhub-repository: wooseopkim/etesync
-            pre-build-script: ./etesync-server/setup
             first-tag: v0.10.0
             dockerfile: unofficial/Dockerfile
-            platforms: linux/amd64
+            pre-build-script: ./etesync-server/setup
             post-build-script: ./etesync-server/verify $IMAGE $TAG
     uses: ./.github/workflows/build-image.yml
     with:
