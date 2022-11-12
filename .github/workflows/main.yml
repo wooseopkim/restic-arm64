@@ -44,6 +44,7 @@ jobs:
               cp ./etesync-server/Dockerfile $CHECKOUT_PATH/unofficial/Dockerfile
             first-tag: v0.10.0
             dockerfile: unofficial/Dockerfile
+            platforms: linux/amd64,linux/arm64
             post-build-script: ./etesync-server/verify $IMAGE $TAG
     uses: ./.github/workflows/build-image.yml
     with:
