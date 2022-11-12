@@ -39,18 +39,14 @@ jobs:
             post-build-script: ./restic-arm64/verify $IMAGE $TAG
           - github-repository: etesync/server
             dockerhub-repository: wooseopkim/etesync
-            pre-build-script: |
-              mkdir -p $CHECKOUT_PATH/unofficial
-              cp ./etesync-server/Dockerfile $CHECKOUT_PATH/unofficial/Dockerfile
+            pre-build-script: ./etesync-server/setup
             first-tag: v0.10.0
             dockerfile: unofficial/Dockerfile
             platforms: linux/arm64
             post-build-script: ./etesync-server/verify $IMAGE $TAG
           - github-repository: etesync/server
             dockerhub-repository: wooseopkim/etesync
-            pre-build-script: |
-              mkdir -p $CHECKOUT_PATH/unofficial
-              cp ./etesync-server/Dockerfile $CHECKOUT_PATH/unofficial/Dockerfile
+            pre-build-script: ./etesync-server/setup
             first-tag: v0.10.0
             dockerfile: unofficial/Dockerfile
             platforms: linux/amd64

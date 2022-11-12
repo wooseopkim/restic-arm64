@@ -1,0 +1,6 @@
+#!/bin/sh
+
+DOCKER_PATH="$CHECKOUT_PATH/unofficial"
+
+mkdir -p $DOCKER_PATH
+cp ./Dockerfile $DOCKER_PATH/Dockerfile
