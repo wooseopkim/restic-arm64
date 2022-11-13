@@ -38,14 +38,7 @@ jobs:
             dockerfile: docker/Dockerfile
             post-build-script: ./restic-arm64/verify $IMAGE $TAG
           - github-repository: etesync/server
-            platforms: linux/arm64
-            dockerhub-repository: wooseopkim/etesync
-            first-tag: v0.10.0
-            dockerfile: unofficial/Dockerfile
-            pre-build-script: ./etesync-server/setup
-            post-build-script: ./etesync-server/verify $IMAGE $TAG
-          - github-repository: etesync/server
-            platforms: linux/amd64
+            platforms: linux/amd64,linux/arm64
             dockerhub-repository: wooseopkim/etesync
             first-tag: v0.10.0
             dockerfile: unofficial/Dockerfile
