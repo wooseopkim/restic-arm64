@@ -1,6 +1,0 @@
-#!/bin/sh
-
-DOCKER_PATH="$CHECKOUT_PATH/unofficial"
-
-mkdir -p $DOCKER_PATH
-cp ./etesync-server/Dockerfile $DOCKER_PATH/Dockerfile

@@ -5,4 +5,3 @@ This repository contains the GitHub Actions workflow code for publishing unoffic
 ## List of images
 
 - [`restic-arm64`](./restic-arm64)
-- [`etesync-server`](./etesync-server)
