@@ -15,11 +15,3 @@ Because there are no official `arm64` images, [which doesn't seem to bother the 
 ## I know, but why not [`mazzolino/restic`](https://hub.docker.com/r/mazzolino/restic)?
 
 Because that is another layer on the top of `restic` source. This project takes a different approach, and aims to provide "not official but works the same as the official one" images.
-
-## Does it work?
-
-The workflow tests if the image works after pushing it. If anything is wrong, please feel free to submit PRs or issues.
-
-## Can I trust you?
-
-Maybe. No changes are intended to the source code. You can see what's happening at the [`Actions` tab](../../actions). If you still can't trust me, you can fork this repository.
