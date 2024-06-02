@@ -34,7 +34,7 @@ jobs:
             dockerfile: docker/Dockerfile
             post-build-script: ./restic-arm64/verify $IMAGE $TAG
           - github-repository: giscus/giscus
-            platforms: linux/armd64,linux/arm64
+            platforms: linux/amd64,linux/arm64
             dockerhub-repository: wooseopkim/giscus
             first-ref: d1c6705
             ref-type: head
