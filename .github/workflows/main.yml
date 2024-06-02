@@ -17,11 +17,6 @@ on:
     # 9 is just a magic number
     - cron: '42 9 * * *'
 
-env:
-  GH_REPOSITORY: restic/restic
-  DOCKERHUB_REPOSITORY: ${{ github.actor }}/restic
-  PUSH_IMAGE: ${{ github.event_name == 'schedule' }}
-
 concurrency:
   group: ${{ github.repository }}/${{ github.workflow }}/${{ github.event_name }}
   cancel-in-progress: true
@@ -34,16 +29,27 @@ jobs:
           - github-repository: restic/restic
             platforms: linux/arm64
             dockerhub-repository: wooseopkim/restic
-            first-tag: v0.13.0
+            first-ref: 0.16.4
+            ref-type: tag
             dockerfile: docker/Dockerfile
             post-build-script: ./restic-arm64/verify $IMAGE $TAG
+          - github-repository: giscus/giscus
+            platforms: linux/armd64,linux/arm64
+            dockerhub-repository: wooseopkim/giscus
+            first-ref: d1c6705
+            ref-type: head
+            dockerfile: docker/Dockerfile
+            pre-build-script: |
+              mkdir -p "$CHECKOUT_PATH"/docker
+              cp ./giscus/* "$CHECKOUT_PATH"/docker
     uses: ./.github/workflows/build-image.yml
     with:
       github-repository: ${{ matrix.github-repository }}
       dockerhub-repository: ${{ matrix.dockerhub-repository }}
       dockerfile: ${{ matrix.dockerfile }}
       platforms: ${{ matrix.platforms }}
-      first-tag: ${{ matrix.first-tag }}
+      first-ref: ${{ matrix.first-ref }}
+      ref-type: ${{ matrix.ref-type }}
       push-image: ${{ github.event_name == 'schedule' }}
       pre-build-script: ${{ matrix.pre-build-script }}
       post-build-script: ${{ matrix.post-build-script }}

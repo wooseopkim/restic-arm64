@@ -17,7 +17,10 @@ on:
         required: false
         type: string
         default: linux/amd64,linux/arm64
-      first-tag:
+      first-ref:
+        required: false
+        type: string
+      ref-type:
         required: false
         type: string
       dockerfile:
@@ -39,8 +42,8 @@ jobs:
   prepare-tags:
     runs-on: ubuntu-latest
     outputs:
-      unpublished: ${{ steps.prefix.outputs.unpublished }}
-      published: ${{ steps.prefix.outputs.published }}
+      unpublished: ${{ steps.tags.outputs.unpublished }}
+      published: ${{ steps.tags.outputs.published }}
     steps:
       - name: Checkout target repository
         uses: actions/checkout@v3
@@ -49,20 +52,11 @@ jobs:
           fetch-depth: 0
       - name: Get unpublished tags
         id: tags
-        uses: wooseopkim/unpublished-tags@v3
+        uses: wooseopkim/unpublished-tags@v4
         with:
           dockerhub-repository: ${{ inputs.dockerhub-repository }}
-          first-tag: ${{ inputs.first-tag }}
-      - name: Add ref prefix
-        id: prefix
-        env:
-          PUBLISHED: ${{ steps.tags.outputs.published }}
-          UNPUBLISHED: ${{ steps.tags.outputs.unpublished }}
-        run: |
-          PUBLISHED_PREFIXED=$(echo "$PUBLISHED" | jq -c 'map("refs/tags/" + .)')
-          UNPUBLISHED_PREFIXED=$(echo "$UNPUBLISHED" | jq -c 'map("refs/tags/" + .)')
-          echo published="$PUBLISHED_PREFIXED" >> $GITHUB_OUTPUT
-          echo unpublished="$UNPUBLISHED_PREFIXED" >> $GITHUB_OUTPUT
+          first-ref: ${{ inputs.first-ref }}
+          ref-type: ${{ inputs.ref-type }}
   build-unpublished:
     needs: [prepare-tags]
     uses: wooseopkim/publish-refs/.github/workflows/workflow.yml@v1
