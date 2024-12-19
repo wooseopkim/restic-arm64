@@ -24,6 +24,7 @@ concurrency:
 jobs:
   build-images:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - github-repository: giscus/giscus
