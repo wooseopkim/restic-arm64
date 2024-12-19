@@ -26,13 +26,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - github-repository: restic/restic
-            platforms: linux/arm64
-            dockerhub-repository: wooseopkim/restic
-            first-ref: v0.16.4
-            ref-type: tag
-            dockerfile: docker/Dockerfile
-            post-build-script: ./restic-arm64/verify $IMAGE $TAG
           - github-repository: giscus/giscus
             platforms: linux/amd64,linux/arm64
             dockerhub-repository: wooseopkim/giscus
