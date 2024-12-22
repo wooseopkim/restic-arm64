@@ -30,7 +30,7 @@ jobs:
           - github-repository: giscus/giscus
             platforms: linux/amd64,linux/arm64
             dockerhub-repository: wooseopkim/giscus
-            first-ref: d1c6705
+            first-ref: e2368de91c3382ee256a4632628de00dd05a0e94
             ref-type: head
             dockerfile: docker/Dockerfile
             pre-build-script: |
