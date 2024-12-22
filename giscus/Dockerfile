@@ -8,6 +8,7 @@ RUN cat ./.env.example | grep 'NEXT_PUBLIC_' | sed 's/^\([^=]\+\)=.*/\1=REPLACE_
 RUN apt update -y && apt upgrade -y && apt install -y gettext-base
 
 COPY package.json yarn.lock client.ts ./
+RUN yarn config set registry https://registry.npmjs.org
 RUN yarn install
 
 RUN npx next telemetry disable
